@@ -8,6 +8,7 @@
 
 #include "camera_pins.h"
 
+/** CUSTOM VARIABLES START */
 const char *ssid = "***"; // Replace with your network SSID
 const char *password = "***"; // Replace with your network password
 
@@ -15,10 +16,10 @@ String serverDomain = "***";  // Replace with IP/domain name of CV service serve
 String serverPath = "/api/v1/detections/image";     // Path of API request for CV detection
 
 const int serverPort = 8000; // Server port
+const int timerInterval = 1000; // time between each API POST request
+/** CUSTOM VARIABLES END */
 
 WiFiClient client;
-
-const int timerInterval = 1000; // time between each API POST request
 unsigned long previousMillis = 0;   // time last API POST request was made
 
 void setup() {
@@ -152,9 +153,9 @@ String sendPhoto() {
     return "";
   }
   
-  Serial.println("Connecting to server: " + serverName);
+  Serial.println("Connecting to server: " + serverDomain);
 
-  if (client.connect(serverName.c_str(), serverPort)) {
+  if (client.connect(serverDomain.c_str(), serverPort)) {
     Serial.println("Connection successful!");    
     String head = "--ESP32CVStreamBoundary\r\nContent-Disposition: form-data; name=\"file\"; filename=\"esp32-cam.jpg\"\r\nContent-Type: image/jpeg\r\n\r\n";
     String tail = "\r\n--ESP32CVStreamBoundary--\r\n";
@@ -164,7 +165,7 @@ String sendPhoto() {
     uint32_t totalLen = imageLen + extraLen;
   
     client.println("POST " + serverPath + " HTTP/1.1");
-    client.println("Host: " + serverName);
+    client.println("Host: " + serverDomain);
     client.println("Content-Length: " + String(totalLen));
     client.println("Content-Type: multipart/form-data; boundary=ESP32CVStreamBoundary");
     client.println();
@@ -212,7 +213,7 @@ String sendPhoto() {
     Serial.println(getBody);
   }
   else {
-    getBody = "Connection to " + serverName +  " failed.";
+    getBody = "Connection to " + serverDomain +  " failed.";
     Serial.println(getBody);
   }
   return getBody;
